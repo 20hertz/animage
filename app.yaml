@@ -1,4 +1,4 @@
-# https://cloud.google.com/appengine/docs/flexible/python/configuring-your-app-with-app-yaml
+# https://cloud.google.com/appengine/docs/flexible/python/reference/app-yaml
 runtime: python
 env: flex
 entrypoint: gunicorn -b :$PORT main:app
