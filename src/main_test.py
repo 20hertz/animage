@@ -6,5 +6,5 @@ def test_main():
     client = app.test_client()
 
     r = client.get('/hello')
-    # assert r.status_code == 200
+    assert r.status_code == 200
     assert 'Hello World' in r.data.decode('utf-8')
