@@ -1,9 +1,9 @@
-import main
+from main import app
 
 
-def test_index():
-    main.app.testing = True
-    client = main.app.test_client()
+def test_main():
+    app.testing = True
+    client = app.test_client()
 
     r = client.get('/hello')
     assert r.status_code == 200
