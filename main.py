@@ -1,17 +1,5 @@
 # [START gae_flex_quickstart]
-from flask import Flask
-from flask_restful import Resource, Api
-
-app = Flask(__name__)
-api = Api(app)
-
-
-class HelloWorld(Resource):
-    def get(self):
-        return 'Hello World!'
-
-
-api.add_resource(HelloWorld, '/hello')
+from src.api import app
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
