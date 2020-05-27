@@ -1,14 +1,14 @@
 from flask import request, flash
-import os
 from werkzeug.utils import secure_filename
 import base64
 import cv2
+import os
 
 
 def configure_routes(app):
 
     @app.route('/', methods=['POST'])
-    def uploadCurl():
+    def upload():
 
         if 'image' not in request.files:
             flash('No file part')
