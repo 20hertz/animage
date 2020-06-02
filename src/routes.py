@@ -9,7 +9,6 @@ def configure_routes(app):
 
     @app.route('/', methods=['POST'])
     def upload():
-
         if 'image' not in request.files:
             flash('No file part')
             return 'Please include an image.'
