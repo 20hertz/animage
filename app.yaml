@@ -1,2 +1,3 @@
 # https://cloud.google.com/appengine/docs/standard/python3/config/appref
 runtime: python37
+entrypoint: python main.py
