@@ -1,4 +1,7 @@
-`$ python main.py`
+```
+$ export FLASK_ENV=development
+$ python main.py
+```
 
 Test
 ```sh
