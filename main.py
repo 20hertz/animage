@@ -4,10 +4,10 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-# if app.config['ENV'] == 'staging':
-#     app.config.from_object('config.StagingConfig')
-# else:
-#     app.config.from_object('config.DevelopmentConfig')
+if app.config["ENV"] == "staging":
+    app.config.from_object("config.StagingConfig")
+else:
+    app.config.from_object("config.DevelopmentConfig")
 
 cors = CORS(
     app,
