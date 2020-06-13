@@ -1,5 +1,5 @@
 from flask import Flask
-from src.routes import configure_routes
+from .routes import configure_routes
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -24,5 +24,6 @@ cors = CORS(
 
 configure_routes(app)
 
+
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8080)
+    app.run()
