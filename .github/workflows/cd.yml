@@ -50,15 +50,15 @@ jobs:
     needs: [test]
     steps:
       - uses: actions/checkout@v2
-    # Setup and configure gcloud CLI
-    # More info at https://github.com/GoogleCloudPlatform/github-actions
-    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
-      with:
-        version: '290.0.1'
-        project_id: ${{ secrets.PROJECT_ID }}
-        service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS}}
-    - name: Deploy
-      run: |
-        gcloud app deploy
-    - name: Completion of CD Pipeline
-      run : echo "App has deployed successfully"
+      # Setup and configure gcloud CLI
+      # More info at https://github.com/GoogleCloudPlatform/github-actions
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "290.0.1"
+          project_id: ${{ secrets.PROJECT_ID }}
+          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS}}
+      - name: Deploy
+        run: |
+          gcloud app deploy
+      - name: Completion of CD Pipeline
+        run: echo "App has deployed successfully"
