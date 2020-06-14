@@ -1,5 +1,5 @@
 class Config(object):
-    UPLOAD_FOLDER = '/tmp'
+    UPLOAD_FOLDER = "/tmp"
 
 
 class StagingConfig(Config):
