@@ -54,10 +54,8 @@ jobs:
       - name: Commit changes
         uses: EndBug/add-and-commit@v4
         with:
-          author_name: GitHub Actions
-          # author_email: mail@example.com
           message: "update requirements.txt"
-          add: "requirements.txt"
+          add: "*.txt"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
