@@ -45,21 +45,17 @@ jobs:
       - name: Test with pytest
         run: poetry run pytest --cov . -n 2
 
-      - name: Remove Dev Dependencies
-        run: poetry install -v --no-interaction --no-ansi --no-dev
-
-      - name: Create requirements.txt (cuz that's what GAE relies on 😒)
-        run: poetry run pip freeze > requirements.txt
-
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v4
-        with:
-          author_name: GitHub Actions
-          # author_email: mail@example.com
-          message: "update requirements.txt"
-          add: "requirements.txt"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Remove Dev Dependencies
+      #   run: poetry install -v --no-interaction --no-ansi --no-dev
+      # - name: Create requirements.txt (cuz that's what GAE relies on 😒)
+      #   run: poetry run pip freeze > requirements.txt
+      # - name: Commit changes
+      #   uses: EndBug/add-and-commit@v4
+      #   with:
+      #     message: "update requirements.txt"
+      #     add: "*.txt"
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     runs-on: ubuntu-latest
