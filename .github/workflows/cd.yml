@@ -48,9 +48,6 @@ jobs:
       - name: Remove Dev Dependencies
         run: poetry install -v --no-interaction --no-ansi --no-dev
 
-      - name: Remove Dev Dependencies
-        run: poetry install -v --no-interaction --no-ansi --no-dev
-
       - name: Create requirements.txt (cuz that's what GAE relies on 😒)
         run: poetry run pip freeze > requirements.txt
 
