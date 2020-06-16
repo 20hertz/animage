@@ -40,7 +40,7 @@ jobs:
 
       # More info at https://github.com/GoogleCloudPlatform/github-actions
       - name: Setup and configure gcloud CLI
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: "290.0.1"
           project_id: ${{ secrets.PROJECT_ID }}
