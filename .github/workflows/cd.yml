@@ -35,8 +35,8 @@ jobs:
       - name: Install Dependencies
         run: poetry install -v --no-interaction --no-ansi --no-dev
 
-      # - name: Create requirements.txt (cuz that's what GAE relies on 😒)
-      #   run: poetry run pip freeze > requirements.txt
+      - name: Create requirements.txt (cuz that's what GAE relies on 😒)
+        run: poetry run pip freeze > requirements.txt
 
       # More info at https://github.com/GoogleCloudPlatform/github-actions
       - name: Setup and configure gcloud CLI
