@@ -25,10 +25,10 @@ jobs:
         id: cache-libs-all
         uses: actions/cache@v2
         env:
-          cache-name: python-devLibs
+          cache-name-allLibs: python-devLibs
         with:
           path: ~/.virtualenvs
-          key: ${{ env.cache-name }}-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ env.cache-name-allLibs }}-${{ hashFiles('**/poetry.lock') }}
           # restore-keys: |
           #   poetry-${{ hashFiles('**/poetry.lock') }}
 
@@ -55,10 +55,10 @@ jobs:
         id: cache-libs-prod
         uses: actions/cache@v2
         env:
-          cache-name: python-prodLibs
+          cache-name-prodLibs: python-prodLibs
         with:
           path: ~/.virtualenvs
-          key: ${{ env.cache-name }}-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ env.cache-name-prodLibs }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Do we have a cache-hit for prod dependencies?
         run: echo "Hell yeah!  They won't be installed again."
