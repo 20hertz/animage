@@ -21,12 +21,14 @@ jobs:
       - name: Install Poetry
         uses: dschep/install-poetry-action@v1.3
 
-      - name: Cache Poetry virtualenv
+      - name: Cache all dependencies in virtualenvs
+        id: cache-libs-all
         uses: actions/cache@v2
-        id: cache
+        env:
+          cache-name: python-devLibs
         with:
           path: ~/.virtualenvs
-          key: poetry-${{ hashFiles('**/poetry.lock') }}
+          key: ${{ env.cache-name }}-${{ hashFiles('**/poetry.lock') }}
           # restore-keys: |
           #   poetry-${{ hashFiles('**/poetry.lock') }}
 
@@ -35,18 +37,28 @@ jobs:
           poetry config virtualenvs.in-project false
           poetry config virtualenvs.path ~/.virtualenvs
 
-      - name: Install Dependencies
+      - name: Install all dependencies
         run: poetry install -v --no-interaction --no-ansi
+        if: steps.cache-libs-all.outputs.cache-hit != 'true'
 
-        # if: steps.cache.outputs.cache-hit != 'true'
       - name: Code Quality
         run: poetry run black . --check
 
       - name: Test with pytest
         run: poetry run pytest --cov . -n 2
 
-      - name: Install Dependencies
+      - name: Cache production dependencies in virtualenvs
+        id: cache-libs-prod
+        uses: actions/cache@v2
+        env:
+          cache-name: python-prodLibs
+        with:
+          path: ~/.virtualenvs
+          key: ${{ env.cache-name }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install production dependencies
         run: poetry install -v --no-interaction --no-ansi --no-dev
+        if: steps.cache-libs-prod.outputs.cache-hit != 'true'
 
       - name: Create requirements.txt (cuz that's what GAE relies on 😒)
         run: poetry run pip freeze > requirements.txt
