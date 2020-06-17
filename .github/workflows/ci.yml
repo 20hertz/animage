@@ -24,49 +24,32 @@ jobs:
       - name: Cache all dependencies in virtualenvs
         id: cache-libs-all
         uses: actions/cache@v2
-        env:
-          cache-name-allLibs: python-devLibs
         with:
           path: ~/.virtualenvs
-          key: ${{ env.cache-name-allLibs }}-${{ hashFiles('**/poetry.lock') }}
-          # restore-keys: |
-          #   poetry-${{ hashFiles('**/poetry.lock') }}
+          key: python-libs-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: python-libs-
 
       - name: Set Poetry config
         run: |
           poetry config virtualenvs.in-project false
           poetry config virtualenvs.path ~/.virtualenvs
 
-      - name: Do we have a cache-hit for all dependencies?
-        run: echo "Hell yeah!  They won't be installed again."
-        if: steps.cache-libs-all.outputs.cache-hit == 'true'
+      # - name: Do we have a cache-hit for all dependencies?
+      #   run: echo "Hell yeah!  They won't be installed again."
+      #   if: steps.cache-libs-all.outputs.cache-hit == 'true'
 
       - name: Install all dependencies
         run: poetry install -v --no-interaction --no-ansi
-        if: steps.cache-libs-all.outputs.cache-hit != 'true'
 
+        # if: steps.cache-libs-all.outputs.cache-hit != 'true'
       - name: Code Quality
         run: poetry run black . --check
 
       - name: Test with pytest
         run: poetry run pytest --cov . -n 2
 
-      - name: Cache production dependencies in virtualenvs
-        id: cache-libs-prod
-        uses: actions/cache@v2
-        env:
-          cache-name-prodLibs: python-prodLibs
-        with:
-          path: ~/.virtualenvs
-          key: ${{ env.cache-name-prodLibs }}-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Do we have a cache-hit for prod dependencies?
-        run: echo "Hell yeah!  They won't be installed again."
-        if: steps.cache-libs-prod.outputs.cache-hit == 'true'
-
       - name: Install production dependencies
         run: poetry install -v --no-interaction --no-ansi --no-dev
-        if: steps.cache-libs-prod.outputs.cache-hit != 'true'
 
       - name: Create requirements.txt (cuz that's what GAE relies on 😒)
         run: poetry run pip freeze > requirements.txt
