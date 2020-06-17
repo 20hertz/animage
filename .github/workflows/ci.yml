@@ -22,7 +22,7 @@ jobs:
         uses: dschep/install-poetry-action@v1.3
 
       - name: Cache all dependencies in virtualenvs
-        id: cache-libs-all
+        id: cache-libs
         uses: actions/cache@v2
         with:
           path: ~/.virtualenvs
@@ -34,25 +34,22 @@ jobs:
           poetry config virtualenvs.in-project false
           poetry config virtualenvs.path ~/.virtualenvs
 
-      - name: Do we have a cache-hit for all dependencies?
-        run: echo "Hell yeah!  They won't be installed again."
-        if: steps.cache-libs-all.outputs.cache-hit == 'true'
+      # - name: Do we have a cache-hit for all dependencies?
+      #   run: echo "Hell yeah!  They won't be installed again."
+      #   if: steps.cache-libs.outputs.cache-hit == 'true'
 
       - name: Install all dependencies
         run: poetry install -v --no-interaction --no-ansi
-        if: steps.cache-libs-all.outputs.cache-hit != 'true'
 
+        # if: steps.cache-libs.outputs.cache-hit != 'true'
       - name: Code Quality
         run: poetry run black . --check
 
       - name: Test with pytest
         run: poetry run pytest --cov . -n 2
 
-      - name: Install production dependencies
-        run: poetry install -v --no-interaction --no-ansi --no-dev
-
-      - name: Create requirements.txt (cuz that's what GAE relies on 😒)
-        run: poetry run pip freeze > requirements.txt
+      - name: Create requirements.txt (cuz that's what GAE relies on)
+        run: poetry export --without-hashes -f requirements.txt > requirements.txt
 
       - name: Push to built branch
         uses: Automattic/action-commit-to-branch@master
