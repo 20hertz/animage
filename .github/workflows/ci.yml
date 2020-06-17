@@ -27,7 +27,7 @@ jobs:
         with:
           path: ~/.virtualenvs
           key: python-libs-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: python-libs-
+          # restore-keys: python-libs-
 
       - name: Set Poetry config
         run: |
@@ -38,7 +38,7 @@ jobs:
         run: echo "Hell yeah!  They won't be installed again. 🙂"
         if: steps.cache-libs.outputs.cache-hit == 'true'
 
-      - name: Install all dependencies
+      - name: Install dependencies
         run: poetry install -v --no-interaction --no-ansi
         if: steps.cache-libs.outputs.cache-hit != 'true'
 
