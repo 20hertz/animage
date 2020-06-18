@@ -43,8 +43,10 @@ jobs:
         if: steps.cache.outputs.cache-hit == 'true'
 
       - name: Install dependencies
-        run: poetry install -v --no-interaction --no-ansi
         if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          source $HOME/.poetry/env
+          poetry install -v --no-interaction --no-ansi
 
       - name: Code Quality
         run: poetry run black . --check
