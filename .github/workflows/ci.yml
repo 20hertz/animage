@@ -37,11 +37,11 @@ jobs:
 
       - name: Do we have a cache-hit for all dependencies?
         run: echo "Hell yeah!  They won't be installed again."
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit == 'true'
 
       - name: Install dependencies
         run: poetry install -v --no-interaction --no-ansi
-      #         if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Code Quality
         run: poetry run black . --check
