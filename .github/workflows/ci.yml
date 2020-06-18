@@ -44,12 +44,12 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          source $HOME/.poetry/env
-          poetry install -v --no-interaction --no-ansi
+        run: poetry install -v --no-interaction --no-ansi
 
       - name: Code Quality
-        run: poetry run black . --check
+        run: |
+          source $HOME/.poetry/env
+          poetry run black . --check
 
       - name: Test with pytest
         run: poetry run pytest --cov . -n 2
