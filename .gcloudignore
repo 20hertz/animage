@@ -1,0 +1,6 @@
+tests/
+.github/
+.coverage
+*.lock
+*.toml
+*.md
