@@ -1,42 +1,29 @@
-from flask import request, flash, Blueprint, current_app
+from flask import request, abort, Blueprint, current_app
+from http import HTTPStatus
 from werkzeug.utils import secure_filename
 import base64
 import cv2
 import os
-from flask_cors import CORS
-
-# @app.before_request
-# def log_request_info(app):
-#     app.logger.debug("Headers: %s", request.headers)
-#     app.logger.debug("Body: %s", request.get_data())
 
 transform_blueprint = Blueprint("transform", __name__)
 
-CORS(
-    transform_blueprint,
-    resources={
-        r"/": {
-            "origins": [
-                "http://localhost:1234",
-                "https://d289aztbzuse4k.cloudfront.net",
-            ]
-        }
-    },
-)
+MIME_TYPES = {"image/jpeg"}
 
 
 @transform_blueprint.route("/", methods=["POST"])
 def upload():
 
-    if "image" not in request.files:
-        flash("No file part")
-        return "Please include an image."
+    files = request.files
+    attachment = files.get("image")
 
-    file = request.files["image"]
+    if not attachment:
+        abort(HTTPStatus.BAD_REQUEST, "no file was attached")
 
-    filename = secure_filename(file.filename)  # save file
+    validate_attachment(attachment)
+
+    filename = secure_filename(attachment.filename)  # save file
     filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
-    file.save(filepath)
+    attachment.save(filepath)
     image = cv2.imread(filepath)
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -47,4 +34,10 @@ def upload():
         str = base64.b64encode(imageFile.read())
         encoded_img = str.decode("utf-8")
 
-    return {"body": encoded_img}
+    return {"body": encoded_img}, 200
+
+
+def validate_attachment(attachment):
+    is_mime_type_allowed = attachment.content_type == "image/jpeg"
+    if not is_mime_type_allowed:
+        abort(HTTPStatus.BAD_REQUEST, "allowed MIME type is image/jpeg")
