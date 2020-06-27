@@ -21,26 +21,18 @@ jobs:
       - name: Install Poetry
         uses: dschep/install-poetry-action@v1.3
 
-      - name: Cache all dependencies in virtualenvs
-        id: cache-libs
-        uses: actions/cache@v2
+      - name: Show Poetry config
+        run: poetry config --list
+
+      - name: Set up cache
+        uses: actions/cache@v1
         with:
-          path: ~/.virtualenvs
-          key: python-libs-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: python-libs-
-
-      - name: Set Poetry config
-        run: |
-          poetry config virtualenvs.in-project false
-          poetry config virtualenvs.path ~/.virtualenvs
-
-#       - name: Do we have a cache-hit for all dependencies?
-#         run: echo "Hell yeah!  They won't be installed again. 🙂"
-#         if: steps.cache-libs.outputs.cache-hit == 'true'
+          path: .venv
+          key: venv-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install dependencies
         run: poetry install -v --no-interaction --no-ansi
-#         if: steps.cache-libs.outputs.cache-hit != 'true'
+      #         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Code Quality
         run: poetry run black . --check
