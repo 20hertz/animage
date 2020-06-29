@@ -4,15 +4,22 @@ from werkzeug.utils import secure_filename
 import base64
 import cv2
 import os
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 MIME_TYPES = {"image/jpeg"}
 
 transform_blueprint = Blueprint("transform", __name__)
 
-CORS(transform_blueprint, resources={r"/": {"origins": "http://localhost:1234"}})
+CORS(
+    transform_blueprint,
+    resources={r"/": {"origins": "https://d289aztbzuse4k.cloudfront.net"}},
+)
 
 
+@cross_origin(
+    origin="https://d289aztbzuse4k.cloudfront.net",
+    headers=["Content- Type", "Authorization"],
+)
 @transform_blueprint.route("/", methods=["POST"])
 def upload():
 

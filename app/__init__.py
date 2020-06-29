@@ -7,6 +7,7 @@ from .config import configs
 def create_app(env):
     app = Flask(__name__)
     app.config.from_object(configs[env])
+    app.config["CORS_HEADERS"] = "Content-Type"
 
     register_blueprint(app)
 
