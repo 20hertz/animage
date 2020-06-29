@@ -10,17 +10,7 @@ MIME_TYPES = {"image/jpeg"}
 
 transform_blueprint = Blueprint("transform", __name__)
 
-CORS(
-    transform_blueprint,
-    resources={
-        r"/": {
-            "origins": [
-                "http://localhost:1234",
-                "https://d289aztbzuse4k.cloudfront.net",
-            ]
-        }
-    },
-)
+CORS(transform_blueprint, resources={r"/": {"origins": "http://localhost:1234"}})
 
 
 @transform_blueprint.route("/", methods=["POST"])
