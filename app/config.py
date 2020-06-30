@@ -18,4 +18,4 @@ class TestConfig(Config):
     pass
 
 
-configs = dict(development=DevelopmentConfig, staging=StagingConfig, test=TestConfig)
+CONFIGS = dict(development=DevelopmentConfig, staging=StagingConfig, test=TestConfig)
