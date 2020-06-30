@@ -1,6 +1,7 @@
 # https://cloud.google.com/appengine/docs/standard/python3/config/appref
-runtime: python37
-entrypoint: gunicorn -b :$PORT application.application
+runtime: python38
+entrypoint: gunicorn -b :$PORT main.application
+x-google-allow: all
 # handlers:
 #   - url: /
 #     http_headers:
