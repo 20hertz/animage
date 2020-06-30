@@ -1,5 +1,5 @@
 # https://cloud.google.com/appengine/docs/standard/python3/config/appref
 runtime: python38
-entrypoint: gunicorn -b :$PORT main.application
+entrypoint: gunicorn -b :$PORT app
 env_variables:
   FLASK_ENV: "development"
