@@ -6,4 +6,4 @@ from flask import Flask
 def app() -> Flask:
     from app import create_app
 
-    return create_app("test")
+    return create_app()
