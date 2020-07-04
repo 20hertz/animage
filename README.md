@@ -10,8 +10,8 @@ $ poetry install
 ```
 
 Run the development server
-```
-$ poetry run flask run
+```sh
+$ poetry run start
 ```
 
 Test

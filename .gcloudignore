@@ -1,8 +1,10 @@
-tests/
-.github/
-.git/
-.gitignore
-.coverage
 *.lock
-*.toml
 *.md
+*.toml
+.coverage
+.git/
+.github/
+.gitignore
+.python-version
+scripts
+tests/

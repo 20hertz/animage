@@ -1,12 +1,21 @@
 from flask import Flask
 import flask_cors
-from .config import CONFIGS
+import os
 
 
-def create_app(config_name):
+def create_app() -> Flask:
+
+    from .config import config_by_name
+
     app = Flask(__name__)
-    flask_cors.CORS(app)
-    app.config.from_object(CONFIGS["development"])
+
+    CONFIG_NAME = os.getenv("FLASK_ENV", "development")
+    app.logger.debug(f"Config name is: {CONFIG_NAME}")
+    config = config_by_name[CONFIG_NAME]
+    app.config.from_object(config)
+    flask_cors.CORS(
+        app, resources={r"/": {"origins": app.config["ALLOWED_ORIGINS"]}},
+    )
 
     register_blueprint(app)
 
