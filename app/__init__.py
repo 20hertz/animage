@@ -13,7 +13,9 @@ def create_app() -> Flask:
     app.logger.debug(f"Config name is: {CONFIG_NAME}")
     config = config_by_name[CONFIG_NAME]
     app.config.from_object(config)
-    flask_cors.CORS(app)
+    flask_cors.CORS(
+        app, resources={r"/": {"origins": app.config["ALLOWED_ORIGINS"]}},
+    )
 
     register_blueprint(app)
 
