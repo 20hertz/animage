@@ -1,0 +1,4 @@
+flask<2.0.0,>=1.1.2
+flask_cors<4.0.0,>=3.0.8
+gunicorn<21.0.0,>=20.0.4
+opencv-python<5.0.0,>=4.2.0
