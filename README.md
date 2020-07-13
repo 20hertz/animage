@@ -9,7 +9,12 @@ Create your virtual environment:
 $ poetry install
 ```
 
-Run the development server
+Run flask development server
+```sh
+$ poetry run flask run
+```
+
+Run gunicorn development server
 ```sh
 $ poetry run start
 ```

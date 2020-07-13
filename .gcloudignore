@@ -2,6 +2,7 @@
 *.md
 *.toml
 .coverage
+.flaskenv
 .git/
 .github/
 .gitignore
