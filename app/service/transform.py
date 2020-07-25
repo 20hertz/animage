@@ -72,9 +72,34 @@ def canny(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, threshold1=30, threshold2=100)
     # Write detected edges image to UPLOAD_FOLDER
-    cv2.imwrite(os.path.join(current_app.config["UPLOAD_FOLDER"], "edges.jpg"), edges)
+    cv2.imwrite(os.path.join(UPLOAD_FOLDER, "edges.jpg"), edges)
 
     with open(f"{UPLOAD_FOLDER}/edges.jpg", "rb") as imageFile:
+        str = base64.b64encode(imageFile.read())
+        encoded_img = str.decode("utf-8")
+
+    return {"body": encoded_img}
+
+
+@transform_blueprint.route("/contour", methods=["POST"])
+@ingest
+def contour(image):
+
+    UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    _, binary = cv2.threshold(gray, 255, 255, cv2.THRESH_BINARY_INV)
+    contours, hierarchy = cv2.findContours(
+        binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+    )
+    image_with_added_contour = cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
+
+    # Write new image to UPLOAD_FOLDER
+    cv2.imwrite(
+        os.path.join(UPLOAD_FOLDER, "contour.jpg"), image_with_added_contour,
+    )
+
+    with open(f"{UPLOAD_FOLDER}/contour.jpg", "rb") as imageFile:
         str = base64.b64encode(imageFile.read())
         encoded_img = str.decode("utf-8")
 
