@@ -48,18 +48,28 @@ def save_file(attachment):
     return image
 
 
+def applyGrayscale(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    return gray
+
+
+def save_transformation(image, upload_dir):
+    # Write image image to UPLOAD_FOLDER
+    cv2.imwrite(os.path.join(upload_dir, "transformed.jpg"), image)
+
+    with open(f"{upload_dir}/transformed.jpg", "rb") as imageFile:
+        str = base64.b64encode(imageFile.read())
+        encoded_img = str.decode("utf-8")
+
+    return encoded_img
+
+
 @transform_blueprint.route("/grayscale", methods=["POST"])
 @ingest
 def grayscale(image):
-
     UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # Write grayscale image to UPLOAD_FOLDER
-    cv2.imwrite(os.path.join(current_app.config["UPLOAD_FOLDER"], "gray.jpg"), gray)
-
-    with open(f"{UPLOAD_FOLDER}/gray.jpg", "rb") as imageFile:
-        str = base64.b64encode(imageFile.read())
-        encoded_img = str.decode("utf-8")
+    gray = applyGrayscale(image)
+    encoded_img = save_transformation(gray, UPLOAD_FOLDER)
 
     return {"body": encoded_img}
 
@@ -67,16 +77,10 @@ def grayscale(image):
 @transform_blueprint.route("/edges", methods=["POST"])
 @ingest
 def canny(image):
-
     UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = applyGrayscale(image)
     edges = cv2.Canny(gray, threshold1=30, threshold2=100)
-    # Write detected edges image to UPLOAD_FOLDER
-    cv2.imwrite(os.path.join(UPLOAD_FOLDER, "edges.jpg"), edges)
-
-    with open(f"{UPLOAD_FOLDER}/edges.jpg", "rb") as imageFile:
-        str = base64.b64encode(imageFile.read())
-        encoded_img = str.decode("utf-8")
+    encoded_img = save_transformation(edges, UPLOAD_FOLDER)
 
     return {"body": encoded_img}
 
@@ -86,21 +90,14 @@ def canny(image):
 def contour(image):
 
     UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    gray = applyGrayscale(rgb)
     _, binary = cv2.threshold(gray, 255, 255, cv2.THRESH_BINARY_INV)
     contours, hierarchy = cv2.findContours(
         binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
     )
-    image_with_added_contour = cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
+    image_with_added_contour = cv2.drawContours(rgb, contours, -1, (0, 255, 0), 2)
 
-    # Write new image to UPLOAD_FOLDER
-    cv2.imwrite(
-        os.path.join(UPLOAD_FOLDER, "contour.jpg"), image_with_added_contour,
-    )
-
-    with open(f"{UPLOAD_FOLDER}/contour.jpg", "rb") as imageFile:
-        str = base64.b64encode(imageFile.read())
-        encoded_img = str.decode("utf-8")
+    encoded_img = save_transformation(image_with_added_contour, UPLOAD_FOLDER)
 
     return {"body": encoded_img}
