@@ -1,4 +1,4 @@
-from flask import request, abort, Blueprint, current_app
+from flask import request, abort, Blueprint, current_app, jsonify
 from functools import wraps
 from http import HTTPStatus
 from werkzeug.utils import secure_filename
@@ -17,8 +17,33 @@ transform_blueprint = Blueprint("transform", __name__)
 # )
 
 
-def ingest(apply_effect):
-    @wraps(apply_effect)
+def safe_run(func, image):
+    UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
+    try:
+        with_detected_shapes = func(image)
+        encoded_img = save_transformation(with_detected_shapes, UPLOAD_FOLDER)
+        return jsonify(body=encoded_img)
+    except TypeError:
+        current_app.logger.debug("HoughLinesP failed")
+        encoded_img = save_transformation(image, UPLOAD_FOLDER)
+        return (
+            jsonify(
+                message="Sorry, no lines were detected.  No edits were made to the image.",  # noqa
+            ),
+            HTTPStatus.UNPROCESSABLE_ENTITY,
+        )
+    else:
+        current_app.logger.debug("Unknown error")
+        return (
+            jsonify(
+                message="Sorry, something went wrong processing this image.  It's not you it's us.",  # noqa
+            ),
+            HTTPStatus.NOT_IMPLEMENTED,
+        )
+
+
+def ingest(effect):
+    @wraps(effect)
     def wrapper():
         attachment = request.files.get("image")
         if not attachment:
@@ -28,7 +53,7 @@ def ingest(apply_effect):
 
         image = save_file(attachment)
 
-        return apply_effect(image)
+        return safe_run(effect(), image)
 
     return wrapper
 
@@ -67,13 +92,34 @@ def save_transformation(image, upload_dir):
     return encoded_img
 
 
+def apply_grayscale(image):
+    gray = applyGrayscale(image)
+    return gray
+
+
+def apply_canny(image):
+    gray = applyGrayscale(image)
+    edges = applyEdgeDetection(gray)
+    return edges
+
+
+def apply_contour(image):
+    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    gray = applyGrayscale(rgb)
+    _, binary = cv2.threshold(gray, 255, 255, cv2.THRESH_BINARY_INV)
+    contours, hierarchy = cv2.findContours(
+        binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+    )
+    image_with_added_contour = cv2.drawContours(rgb, contours, -1, (0, 255, 0), 2)
+    return image_with_added_contour
+
+
 def detect_lines(image):
     gray = applyGrayscale(image)
     edges = applyEdgeDetection(gray)
     lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 60, np.array([]), 50, 5)
     if lines is None:
         raise TypeError("HoughLinesP failed")
-        # current_app.logger.debug("HoughLinesP failed")
         # return None
     for line in lines:
         for x1, y1, x2, y2 in line:
@@ -83,57 +129,23 @@ def detect_lines(image):
 
 @transform_blueprint.route("/grayscale", methods=["POST"])
 @ingest
-def apply_grayscale(image):
-    UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
-    gray = applyGrayscale(image)
-    encoded_img = save_transformation(gray, UPLOAD_FOLDER)
-
-    return {"body": encoded_img}
+def grayscale():
+    return apply_grayscale
 
 
 @transform_blueprint.route("/edges", methods=["POST"])
 @ingest
-def apply_canny(image):
-    UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
-    gray = applyGrayscale(image)
-    edges = applyEdgeDetection(gray)
-    encoded_img = save_transformation(edges, UPLOAD_FOLDER)
-
-    return {"body": encoded_img}
+def edges():
+    return apply_canny
 
 
 @transform_blueprint.route("/contour", methods=["POST"])
 @ingest
-def apply_contour(image):
-
-    UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
-    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    gray = applyGrayscale(rgb)
-    _, binary = cv2.threshold(gray, 255, 255, cv2.THRESH_BINARY_INV)
-    contours, hierarchy = cv2.findContours(
-        binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-    )
-    image_with_added_contour = cv2.drawContours(rgb, contours, -1, (0, 255, 0), 2)
-
-    encoded_img = save_transformation(image_with_added_contour, UPLOAD_FOLDER)
-
-    return {"body": encoded_img}
+def contour():
+    return apply_contour
 
 
 @transform_blueprint.route("/shapes", methods=["POST"])
 @ingest
-def apply_shapes(image):
-    UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
-    try:
-        with_detected_shapes = detect_lines(image)
-        encoded_img = save_transformation(with_detected_shapes, UPLOAD_FOLDER)
-        # status_code = 200
-    except TypeError:
-        current_app.logger.debug("HoughLinesP failed")
-        encoded_img = save_transformation(image, UPLOAD_FOLDER)
-        # status_code = HTTPStatus.UNPROCESSABLE_ENTITY
-    else:
-        current_app.logger.debug("Unknown error")
-        encoded_img = save_transformation(image, UPLOAD_FOLDER)
-    finally:
-        return {"body": encoded_img}
+def shapes():
+    return detect_lines
