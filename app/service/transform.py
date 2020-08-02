@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 import base64
 import cv2
 import os
+import numpy as np
 
 MIME_TYPES = {"image/jpeg"}
 
@@ -16,11 +17,10 @@ transform_blueprint = Blueprint("transform", __name__)
 # )
 
 
-def ingest(effect):
-    @wraps(effect)
+def ingest(apply_effect):
+    @wraps(apply_effect)
     def wrapper():
         attachment = request.files.get("image")
-
         if not attachment:
             abort(HTTPStatus.BAD_REQUEST, "no file was attached")
 
@@ -28,7 +28,7 @@ def ingest(effect):
 
         image = save_file(attachment)
 
-        return effect(image)
+        return apply_effect(image)
 
     return wrapper
 
@@ -36,7 +36,7 @@ def ingest(effect):
 def validate_attachment(attachment):
     is_mime_type_allowed = attachment.content_type == "image/jpeg"
     if not is_mime_type_allowed:
-        abort(HTTPStatus.BAD_REQUEST, "allowed MIME type is image/jpeg")
+        abort(HTTPStatus.UNSUPPORTED_MEDIA_TYPE, "allowed MIME type is image/jpeg")
 
 
 def save_file(attachment):
@@ -49,8 +49,11 @@ def save_file(attachment):
 
 
 def applyGrayscale(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    return gray
+    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+
+def applyEdgeDetection(image):
+    return cv2.Canny(image, threshold1=30, threshold2=100)
 
 
 def save_transformation(image, upload_dir):
@@ -64,9 +67,23 @@ def save_transformation(image, upload_dir):
     return encoded_img
 
 
+def detect_lines(image):
+    gray = applyGrayscale(image)
+    edges = applyEdgeDetection(gray)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 60, np.array([]), 50, 5)
+    if lines is None:
+        raise TypeError("HoughLinesP failed")
+        # current_app.logger.debug("HoughLinesP failed")
+        # return None
+    for line in lines:
+        for x1, y1, x2, y2 in line:
+            cv2.line(image, (x1, y1), (x2, y2), (20, 220, 20), 3)
+            return image
+
+
 @transform_blueprint.route("/grayscale", methods=["POST"])
 @ingest
-def grayscale(image):
+def apply_grayscale(image):
     UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
     gray = applyGrayscale(image)
     encoded_img = save_transformation(gray, UPLOAD_FOLDER)
@@ -76,10 +93,10 @@ def grayscale(image):
 
 @transform_blueprint.route("/edges", methods=["POST"])
 @ingest
-def canny(image):
+def apply_canny(image):
     UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
     gray = applyGrayscale(image)
-    edges = cv2.Canny(gray, threshold1=30, threshold2=100)
+    edges = applyEdgeDetection(gray)
     encoded_img = save_transformation(edges, UPLOAD_FOLDER)
 
     return {"body": encoded_img}
@@ -87,7 +104,7 @@ def canny(image):
 
 @transform_blueprint.route("/contour", methods=["POST"])
 @ingest
-def contour(image):
+def apply_contour(image):
 
     UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -101,3 +118,22 @@ def contour(image):
     encoded_img = save_transformation(image_with_added_contour, UPLOAD_FOLDER)
 
     return {"body": encoded_img}
+
+
+@transform_blueprint.route("/shapes", methods=["POST"])
+@ingest
+def apply_shapes(image):
+    UPLOAD_FOLDER = current_app.config["UPLOAD_FOLDER"]
+    try:
+        with_detected_shapes = detect_lines(image)
+        encoded_img = save_transformation(with_detected_shapes, UPLOAD_FOLDER)
+        # status_code = 200
+    except TypeError:
+        current_app.logger.debug("HoughLinesP failed")
+        encoded_img = save_transformation(image, UPLOAD_FOLDER)
+        # status_code = HTTPStatus.UNPROCESSABLE_ENTITY
+    else:
+        current_app.logger.debug("Unknown error")
+        encoded_img = save_transformation(image, UPLOAD_FOLDER)
+    finally:
+        return {"body": encoded_img}
